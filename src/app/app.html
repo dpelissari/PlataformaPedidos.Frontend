@@ -1,0 +1,28 @@
+<div class="min-h-dvh md:grid md:grid-cols-[15rem_minmax(0,1fr)]">
+  <header class="flex items-center justify-between gap-6 bg-tinta px-4 py-4 text-papel md:flex-col md:items-stretch md:justify-start md:px-5 md:py-8">
+    <div>
+      <p class="text-lg font-semibold">Pedidos</p>
+      <p class="mt-1 text-sm text-papel/80">Entrega e pagamento</p>
+    </div>
+    <nav class="flex gap-2 md:mt-8 md:flex-col" aria-label="Principal">
+      <a
+        routerLink="/pedidos"
+        routerLinkActive="ativa"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="rounded-md px-3 py-2 text-sm text-papel hover:bg-papel/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-etiqueta [&.ativa]:bg-papel [&.ativa]:text-tinta [&.ativa]:hover:bg-papel"
+      >
+        Lista
+      </a>
+      <a
+        routerLink="/pedidos/novo"
+        routerLinkActive="ativa"
+        class="rounded-md px-3 py-2 text-sm text-papel hover:bg-papel/15 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-etiqueta [&.ativa]:bg-papel [&.ativa]:text-tinta [&.ativa]:hover:bg-papel"
+      >
+        Novo pedido
+      </a>
+    </nav>
+  </header>
+  <main class="px-4 py-6 md:px-8 md:py-8">
+    <router-outlet />
+  </main>
+</div>

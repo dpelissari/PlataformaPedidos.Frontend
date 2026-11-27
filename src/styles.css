@@ -1,0 +1,21 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Sora', ui-sans-serif, system-ui, sans-serif;
+  --color-tinta: #1b3a4b;
+  --color-baia: #e4eef1;
+  --color-papel: #f7fafb;
+  --color-etiqueta: #e3b23c;
+  --color-linha: #c5d2d8;
+  --color-confirmado: #1f6b45;
+  --color-aguardando: #8a5a12;
+  --color-cancelado: #8e2f2f;
+  --color-rascunho: #3d4f5a;
+}
+
+body {
+  margin: 0;
+  background: var(--color-baia);
+  color: var(--color-tinta);
+  font-family: var(--font-sans);
+}

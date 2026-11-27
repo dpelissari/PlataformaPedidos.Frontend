@@ -1,0 +1,66 @@
+<section class="mx-auto flex max-w-5xl flex-col gap-6">
+  <a
+    routerLink="/pedidos"
+    class="w-fit text-sm underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+  >
+    Voltar à lista
+  </a>
+
+  @if (erro()) {
+    <p role="alert" class="border border-cancelado bg-papel px-4 py-3 text-sm text-cancelado">
+      {{ erro() }}
+    </p>
+  }
+
+  @if (carregando()) {
+    <p class="text-sm text-rascunho">Carregando pedido.</p>
+  } @else if (pedido(); as pedido) {
+    <header class="flex flex-col gap-3 border border-linha border-t-8 border-t-etiqueta bg-papel px-4 py-5 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold">{{ pedido.logradouro }}, {{ pedido.numero }}</h1>
+        <p class="mt-2 text-sm text-rascunho">
+          {{ pedido.bairro }} — {{ pedido.cidade }}/{{ pedido.estado }} — CEP {{ pedido.cep }}
+        </p>
+        @if (pedido.complemento) {
+          <p class="text-sm text-rascunho">{{ pedido.complemento }}</p>
+        }
+        <p class="mt-2 text-sm text-rascunho">Criado em {{ pedido.dataCriacaoUtc | date: 'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      <app-selo-status [status]="pedido.status" />
+    </header>
+
+    @if (pedido.status === 'AguardandoPagamento') {
+      <p role="status" class="text-sm text-aguardando">Aguardando a confirmação do pagamento.</p>
+    }
+
+    @if (pedido.motivoCancelamento) {
+      <p class="text-sm">Motivo do cancelamento: {{ pedido.motivoCancelamento }}</p>
+    }
+
+    <table class="w-full border-collapse bg-papel text-sm">
+      <caption class="sr-only">Itens do pedido</caption>
+      <thead class="border-b border-linha text-left">
+        <tr>
+          <th scope="col" class="px-4 py-3 font-medium">Item</th>
+          <th scope="col" class="px-4 py-3 font-medium">Qtd.</th>
+          <th scope="col" class="px-4 py-3 font-medium">Preço</th>
+          <th scope="col" class="px-4 py-3 font-medium">Subtotal</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of pedido.itens; track item.id) {
+          <tr class="border-b border-linha">
+            <td class="px-4 py-3">{{ item.nomeProduto }}</td>
+            <td class="px-4 py-3 tabular-nums">{{ item.quantidade }}</td>
+            <td class="px-4 py-3 tabular-nums">{{ formatarMoeda(item.precoUnitario, pedido.moeda) }}</td>
+            <td class="px-4 py-3 tabular-nums">{{ formatarMoeda(item.subtotal, pedido.moeda) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <p class="text-lg font-semibold tabular-nums">Total {{ formatarMoeda(pedido.valorTotal, pedido.moeda) }}</p>
+
+    <app-acoes-pedido [pedido]="pedido" (atualizado)="receber($event)" />
+  }
+</section>

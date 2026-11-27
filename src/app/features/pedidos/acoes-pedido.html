@@ -1,0 +1,51 @@
+<div class="flex flex-col items-start gap-3">
+  <div class="flex flex-wrap gap-2">
+    @if (pedido().status === 'Rascunho' || pedido().status === 'AguardandoPagamento') {
+      @if (!cancelando()) {
+        <button
+          type="button"
+          class="rounded-md border border-cancelado bg-papel px-3 py-2 text-sm text-cancelado hover:bg-baia focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cancelado disabled:cursor-not-allowed disabled:opacity-50"
+          [disabled]="processando()"
+          (click)="abrirCancelamento()"
+        >
+          Cancelar pedido
+        </button>
+      }
+    }
+  </div>
+
+  @if (cancelando()) {
+    <form class="flex w-full flex-col gap-2 sm:flex-row sm:items-end" (submit)="$event.preventDefault(); confirmarCancelamento()">
+      <label class="flex min-w-0 flex-1 flex-col gap-1 text-sm">
+        Motivo
+        <input
+          type="text"
+          class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+          [formControl]="motivo"
+          [attr.aria-invalid]="motivo.invalid && motivo.touched"
+        />
+      </label>
+      <button
+        type="submit"
+        class="rounded-md bg-tinta px-3 py-2 text-sm text-papel hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="processando()"
+      >
+        Confirmar cancelamento
+      </button>
+      <button
+        type="button"
+        class="rounded-md border border-linha bg-papel px-3 py-2 text-sm hover:bg-baia focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+        (click)="desistir()"
+      >
+        Voltar
+      </button>
+    </form>
+    @if (motivo.invalid && motivo.touched) {
+      <p class="text-sm text-cancelado">Informe o motivo do cancelamento.</p>
+    }
+  }
+
+  @if (erro()) {
+    <p role="alert" class="text-sm text-cancelado">{{ erro() }}</p>
+  }
+</div>

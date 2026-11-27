@@ -1,0 +1,56 @@
+<section class="mx-auto flex max-w-5xl flex-col gap-6">
+  <header class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">Pedidos</h1>
+      <p class="mt-2 max-w-prose text-sm text-rascunho">
+        A lista acompanha sozinha o pedido que está aguardando pagamento.
+      </p>
+    </div>
+    <a
+      routerLink="/pedidos/novo"
+      class="inline-flex rounded-md bg-etiqueta px-3 py-2 text-sm font-medium text-tinta hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+    >
+      Novo pedido
+    </a>
+  </header>
+
+  @if (erro()) {
+    <p role="alert" class="border border-cancelado bg-papel px-4 py-3 text-sm text-cancelado">
+      {{ erro() }}
+    </p>
+  }
+
+  @if (carregando()) {
+    <p class="text-sm text-rascunho">Carregando pedidos.</p>
+  } @else if (pedidos().length === 0 && !erro()) {
+    <p class="border border-linha bg-papel px-4 py-6 text-sm">
+      Nenhum pedido por aqui.
+      <a
+        routerLink="/pedidos/novo"
+        class="font-medium underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+      >
+        Criar o primeiro pedido
+      </a>
+    </p>
+  } @else {
+    <ul class="divide-y divide-linha border border-linha bg-papel">
+      @for (pedido of pedidos(); track pedido.id) {
+        <li class="flex flex-col gap-4 px-4 py-4">
+          <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div class="min-w-0">
+              <a
+                [routerLink]="['/pedidos', pedido.id]"
+                class="font-medium underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              >
+                {{ endereco(pedido) }}
+              </a>
+              <p class="mt-1 text-sm text-rascunho">{{ formatarMoeda(pedido.valorTotal, pedido.moeda) }}</p>
+            </div>
+            <app-selo-status [status]="pedido.status" />
+          </div>
+          <app-acoes-pedido [pedido]="pedido" (atualizado)="substituir($event)" />
+        </li>
+      }
+    </ul>
+  }
+</section>

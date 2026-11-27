@@ -1,0 +1,142 @@
+<section class="mx-auto grid max-w-5xl gap-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
+  <form class="flex flex-col gap-8" (submit)="$event.preventDefault(); criar()">
+    <header>
+      <h1 class="text-2xl font-semibold">Novo pedido</h1>
+      <p class="mt-2 max-w-prose text-sm text-rascunho">
+        O endereço chega assim que o CEP tem 8 números. O total acompanha os itens.
+      </p>
+    </header>
+
+    <fieldset class="flex flex-col gap-4 border-0 p-0">
+      <legend class="text-base font-medium">Entrega</legend>
+      <label class="flex flex-col gap-1 text-sm">
+        CEP
+        <input
+          type="text"
+          inputmode="numeric"
+          autocomplete="postal-code"
+          maxlength="9"
+          class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+          [formControl]="formulario.controls.cep"
+        />
+      </label>
+      @if (buscandoCep()) {
+        <p class="text-sm text-rascunho">Buscando endereço.</p>
+      }
+      @if (erroCep()) {
+        <p role="alert" class="text-sm text-cancelado">{{ erroCep() }}</p>
+      }
+      @if (formulario.controls.cep.invalid && (formulario.controls.cep.touched || enviado())) {
+        <p class="text-sm text-cancelado">O CEP deve conter 8 dígitos numéricos.</p>
+      }
+      @if (endereco(); as endereco) {
+        <p class="border border-linha bg-papel px-4 py-3 text-sm">
+          {{ endereco.logradouro }} — {{ endereco.bairro }}, {{ endereco.cidade }}/{{ endereco.estado }}
+        </p>
+      }
+
+      <label class="flex flex-col gap-1 text-sm">
+        Número
+        <input
+          type="text"
+          autocomplete="address-line2"
+          class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+          [formControl]="formulario.controls.numero"
+        />
+      </label>
+      @if (formulario.controls.numero.invalid && (formulario.controls.numero.touched || enviado())) {
+        <p class="text-sm text-cancelado">O número é obrigatório.</p>
+      }
+
+      <label class="flex flex-col gap-1 text-sm">
+        Complemento
+        <input
+          type="text"
+          autocomplete="address-line2"
+          class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+          [formControl]="formulario.controls.complemento"
+        />
+      </label>
+    </fieldset>
+
+    <fieldset class="flex flex-col gap-4 border-0 p-0">
+      <legend class="text-base font-medium">Itens</legend>
+      @for (item of itens.controls; track item.controls.produtoId.value) {
+        <div class="grid gap-3 border border-linha bg-papel p-4 md:grid-cols-[minmax(0,1fr)_6rem_8rem_auto]">
+          <label class="flex flex-col gap-1 text-sm">
+            Produto
+            <input
+              type="text"
+              class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              [formControl]="item.controls.nomeProduto"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm">
+            Qtd.
+            <input
+              type="number"
+              min="1"
+              step="1"
+              class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              [formControl]="item.controls.quantidade"
+            />
+          </label>
+          <label class="flex flex-col gap-1 text-sm">
+            Preço
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              class="border border-linha bg-papel px-3 py-2 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              [formControl]="item.controls.precoUnitario"
+            />
+          </label>
+          <button
+            type="button"
+            class="self-end rounded-md border border-linha px-3 py-2 text-sm hover:bg-baia focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="itens.length === 1"
+            (click)="removerItem($index)"
+          >
+            Remover
+          </button>
+          @if (item.controls.nomeProduto.invalid && (item.controls.nomeProduto.touched || enviado())) {
+            <p class="text-sm text-cancelado md:col-span-4">O nome do produto é obrigatório.</p>
+          }
+          @if (item.controls.quantidade.invalid && (item.controls.quantidade.touched || enviado())) {
+            <p class="text-sm text-cancelado md:col-span-4">A quantidade deve ser maior que zero.</p>
+          }
+          @if (item.controls.precoUnitario.invalid && (item.controls.precoUnitario.touched || enviado())) {
+            <p class="text-sm text-cancelado md:col-span-4">O preço não pode ser negativo e aceita no máximo duas casas.</p>
+          }
+        </div>
+      }
+      <button
+        type="button"
+        class="w-fit rounded-md border border-linha bg-papel px-3 py-2 text-sm hover:bg-baia focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+        (click)="adicionarItem()"
+      >
+        Adicionar item
+      </button>
+    </fieldset>
+
+    @if (enviado() && endereco() === null && formulario.controls.cep.valid) {
+      <p role="alert" class="text-sm text-cancelado">Consulte o CEP antes de criar o pedido.</p>
+    }
+    @if (erro()) {
+      <p role="alert" class="text-sm text-cancelado">{{ erro() }}</p>
+    }
+
+    <button
+      type="submit"
+      class="w-fit rounded-md bg-etiqueta px-4 py-2 text-sm font-medium text-tinta hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta disabled:cursor-not-allowed disabled:opacity-50"
+      [disabled]="enviando()"
+    >
+      Criar pedido
+    </button>
+  </form>
+
+  <aside class="h-fit border border-linha border-t-8 border-t-etiqueta bg-papel p-4 lg:sticky lg:top-6">
+    <p class="text-sm text-rascunho">Total do pedido</p>
+    <p class="mt-2 text-2xl font-semibold tabular-nums">{{ formatarMoeda(total()) }}</p>
+  </aside>
+</section>
