@@ -13,6 +13,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/pedidos/criar-pedido').then((modulo) => modulo.CriarPedido),
   },
   {
+    path: 'pedidos/:id/pagamento',
+    title: 'Cartão',
+    loadComponent: () => import('./features/pedidos/pagar-pedido').then((modulo) => modulo.PagarPedido),
+  },
+  {
     path: 'pedidos/:id',
     title: 'Pedido',
     loadComponent: () => import('./features/pedidos/detalhe-pedido').then((modulo) => modulo.DetalhePedido),

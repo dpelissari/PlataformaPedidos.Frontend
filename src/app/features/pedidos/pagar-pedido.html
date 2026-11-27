@@ -1,0 +1,214 @@
+<section class="mx-auto flex max-w-md flex-col gap-6">
+  <a
+    [routerLink]="pedido() ? ['/pedidos', pedido()!.id] : ['/pedidos']"
+    class="w-fit text-sm underline-offset-2 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+  >
+    Voltar ao pedido
+  </a>
+
+  <header>
+    <h1 class="text-2xl font-semibold">Cartão</h1>
+    <p class="mt-2 text-sm text-rascunho">
+      O número aparece no cartão enquanto você digita. O Mercado Pago recebe só o token.
+    </p>
+  </header>
+
+  @if (erro()) {
+    <p role="alert" class="border border-cancelado bg-papel px-4 py-3 text-sm text-cancelado">
+      {{ erro() }}
+    </p>
+  }
+
+  @if (carregando()) {
+    <p class="text-sm text-rascunho">Carregando pedido.</p>
+  } @else if (pedido(); as pedido) {
+    @if (pedido.status !== 'Rascunho') {
+      <p class="border border-linha bg-papel px-4 py-3 text-sm">
+        Este pedido já saiu do rascunho e não aceita outro cartão.
+      </p>
+    } @else if (!chavePublica()) {
+      <p class="border border-linha bg-papel px-4 py-3 text-sm">
+        Falta a Public Key de teste. Copie
+        <span class="font-medium">mercadopago.local.exemplo.json</span>
+        para
+        <span class="font-medium">mercadopago.local.json</span>
+        na raiz do backend, preencha a Public Key e o Access Token, e suba a API de novo.
+      </p>
+    } @else {
+      <form class="bg-papel px-4 pb-6 pt-6" (submit)="$event.preventDefault(); pagar()">
+        <div class="relative z-10 -mb-8 ml-4 mr-8 rounded-xl bg-tinta px-5 pb-5 pt-4 text-papel shadow-[0_16px_28px_rgba(27,58,75,0.28)]" aria-hidden="true">
+          <div class="flex items-start justify-between gap-4">
+            <p class="text-sm">Cartão</p>
+            <p class="text-lg font-semibold">{{ bandeira() || ' ' }}</p>
+          </div>
+          <div class="mt-5 h-8 w-11 rounded-sm bg-etiqueta"></div>
+          <p class="mt-4 text-lg tracking-[0.18em]">{{ numeroNoCartao() }}</p>
+          <div class="mt-4 flex items-end justify-between gap-4 text-sm">
+            <p class="min-w-0">
+              <span class="block text-xs text-papel/70">Titular</span>
+              <span class="block truncate uppercase">{{ titularNoCartao() }}</span>
+            </p>
+            <p class="shrink-0 text-right">
+              <span class="block text-xs text-papel/70">Validade</span>
+              <span class="tabular-nums">{{ validadeNoCartao() }}</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4 border border-linha px-4 pb-4 pt-12">
+          <p class="text-sm text-rascunho">
+            {{ pedido.logradouro }}, {{ pedido.numero }} — {{ formatarMoeda(pedido.valorTotal, pedido.moeda) }}
+          </p>
+
+          <div class="flex flex-col gap-1 text-sm">
+            <label for="numero-cartao">Número</label>
+            <span class="relative">
+              <input
+                id="numero-cartao"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-number"
+                class="w-full border border-linha bg-papel py-3 pl-3 pr-12 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.numero"
+                (input)="formatarNumero($event)"
+              />
+              <button
+                type="button"
+                class="absolute top-1/2 right-2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full border border-linha text-sm text-rascunho hover:bg-baia focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [attr.aria-expanded]="dicaAberta()"
+                aria-controls="cartoes-teste"
+                aria-label="Cartões de teste"
+                (click)="alternarDica($event)"
+              >
+                ?
+              </button>
+              @if (dicaAberta()) {
+                <div
+                  id="cartoes-teste"
+                  role="tooltip"
+                  class="absolute top-[calc(100%+0.5rem)] right-0 z-20 w-72 border border-linha bg-papel p-3 text-tinta shadow-[0_8px_20px_rgba(27,58,75,0.12)]"
+                >
+                  <p class="text-sm font-medium">Cartões de teste</p>
+                  <p class="mt-1 text-xs text-rascunho">Validade 11/30. Nenhum cobra de verdade.</p>
+                  <ul class="mt-2 flex flex-col gap-2 text-xs">
+                    @for (cartao of cartoesTeste; track cartao.numero) {
+                      <li>
+                        <span class="block">{{ cartao.bandeira }}</span>
+                        <span class="tabular-nums">{{ cartao.numero }} · código {{ cartao.codigo }}</span>
+                      </li>
+                    }
+                  </ul>
+                  <p class="mt-2 text-xs text-rascunho">
+                    O que você escreve no titular define o resultado do teste.
+                  </p>
+                  <ul class="mt-1 flex flex-col gap-1 text-xs">
+                    <li>APRO, com o CPF 12345678909, aprova o pagamento.</li>
+                    <li>OTHE recusa o cartão.</li>
+                    <li>FUND recusa porque o limite é insuficiente.</li>
+                  </ul>
+                  <p class="mt-2 text-xs text-rascunho">
+                    No e-mail, use qualquer endereço válido, menos o da conta do Mercado Pago.
+                  </p>
+                </div>
+              }
+            </span>
+          </div>
+
+          <label class="flex flex-col gap-1 text-sm">
+            Titular
+            <input
+              type="text"
+              autocomplete="cc-name"
+              class="border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              [formControl]="formulario.controls.titular"
+            />
+          </label>
+
+          <div class="grid grid-cols-3 gap-3">
+            <label class="flex min-w-0 flex-col gap-1 text-sm">
+              Mês
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="2"
+                autocomplete="cc-exp-month"
+                placeholder="MM"
+                class="w-full min-w-0 border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.mes"
+                (input)="limitarDigitos($event, 'mes', 2)"
+              />
+            </label>
+            <label class="flex min-w-0 flex-col gap-1 text-sm">
+              Ano
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="2"
+                autocomplete="cc-exp-year"
+                placeholder="AA"
+                class="w-full min-w-0 border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.ano"
+                (input)="limitarDigitos($event, 'ano', 2)"
+              />
+            </label>
+            <label class="flex min-w-0 flex-col gap-1 text-sm">
+              Código
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="4"
+                autocomplete="cc-csc"
+                placeholder="CVV"
+                class="w-full min-w-0 border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.codigo"
+                (input)="limitarDigitos($event, 'codigo', 4)"
+              />
+            </label>
+          </div>
+
+          <div class="grid grid-cols-[7rem_minmax(0,1fr)] gap-3">
+            <label class="flex flex-col gap-1 text-sm">
+              Documento
+              <select
+                class="border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.tipoDocumento"
+              >
+                <option value="CPF">CPF</option>
+                <option value="CNPJ">CNPJ</option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              Número
+              <input
+                type="text"
+                inputmode="numeric"
+                autocomplete="off"
+                class="border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+                [formControl]="formulario.controls.documento"
+                (input)="limitarDigitos($event, 'documento', 14)"
+              />
+            </label>
+          </div>
+
+          <label class="flex flex-col gap-1 text-sm">
+            E-mail
+            <input
+              type="email"
+              autocomplete="email"
+              class="border border-linha bg-papel px-3 py-3 text-tinta outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+              [formControl]="formulario.controls.email"
+            />
+          </label>
+
+          <button
+            type="submit"
+            class="rounded-md bg-tinta px-3 py-3 text-sm font-medium text-papel hover:brightness-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="enviando()"
+          >
+            Pagar {{ formatarMoeda(pedido.valorTotal, pedido.moeda) }}
+          </button>
+        </div>
+      </form>
+    }
+  }
+</section>

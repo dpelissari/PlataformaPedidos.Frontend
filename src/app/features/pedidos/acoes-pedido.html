@@ -1,5 +1,13 @@
 <div class="flex flex-col items-start gap-3">
   <div class="flex flex-wrap gap-2">
+    @if (pedido().status === 'Rascunho') {
+      <a
+        class="rounded-md bg-etiqueta px-3 py-2 text-sm font-medium text-tinta hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tinta"
+        [routerLink]="['/pedidos', pedido().id, 'pagamento']"
+      >
+        Pedir pagamento
+      </a>
+    }
     @if (pedido().status === 'Rascunho' || pedido().status === 'AguardandoPagamento') {
       @if (!cancelando()) {
         <button

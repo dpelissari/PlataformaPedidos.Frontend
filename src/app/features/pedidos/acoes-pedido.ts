@@ -1,5 +1,6 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DestroyRef } from '@angular/core';
 
@@ -9,7 +10,7 @@ import { PedidosApi } from '../../core/pedidos-api';
 
 @Component({
   selector: 'app-acoes-pedido',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './acoes-pedido.html',
 })
 export class AcoesPedido {

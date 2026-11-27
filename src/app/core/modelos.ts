@@ -42,6 +42,20 @@ export interface ItemPedidoEntrada {
   precoUnitario: number;
 }
 
+export interface SolicitarPagamentoEntrada {
+  token: string;
+  bandeira: string;
+  emissorId: string | null;
+  parcelas: number;
+  emailPagador: string;
+  tipoDocumento: string;
+  numeroDocumento: string;
+}
+
+export interface ConfiguracaoPagamento {
+  chavePublica: string;
+}
+
 export interface CriarPedidoEntrada {
   clienteId: string;
   cep: string;
